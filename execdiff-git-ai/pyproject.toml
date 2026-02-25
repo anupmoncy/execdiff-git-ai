@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "execdiff-git-ai"
 version = "1.0.1"
-description = "Local-first tool for analyzing AI-driven code changes. Understand what your AI copilot changed before you commit it."
+description = "AI Impact Assessment for git changes - understand what your AI copilot changed before you commit."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
@@ -13,6 +13,9 @@ authors = [
 ]
 requires-python = ">=3.8"
 keywords = ["git", "ai", "copilot", "code-analysis", "diff", "impact-assessment"]
+dependencies = [
+    "requests>=2.25.0"
+]
 
 classifiers = [
 	"Development Status :: 4 - Beta",

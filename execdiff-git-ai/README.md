@@ -21,7 +21,6 @@ ExecDiff Git AI runs **entirely locally**.
 - **Local-first**: Runs entirely on your machine with no cloud calls or telemetry
 - **Impact Assessment**: Detects specific changes to functions, classes, and variables and provides human-readable summaries
 - **Two modes**: Fast analysis (non-AI) or deep AI-powered analysis (optional)
-- **Automatic Ollama**: AI mode automatically starts Ollama in the background - no manual setup needed
 - **CLI-first**: `execdiff-git scan` and `execdiff-git scan-ai`
 - **Works offline**, no telemetry
 
@@ -64,13 +63,51 @@ That's it! You can now use the non-AI mode immediately.
 
 **Note**: For newly created files, you must run `git add -N .` (intent-to-add) so that `execdiff-git scan` can detect them. This is a git limitation for diff tools.
 
-### AI-Powered Assessment (Optional)
+---
 
-**Ollama is completely optional.** The non-AI mode works great for most use cases.
+## AI-Powered Assessment (Optional)
 
-If you want AI-powered analysis:
+**AI mode is completely optional.** The non-AI mode works great for most use cases.
 
-#### Option 1: Automatic (Recommended)
+### Requirements for AI Mode
+
+| Component | Size | Description |
+|-----------|------|-------------|
+| **Ollama** | ~50MB | Local AI runtime (one-time install) |
+| **tinyllama model** | ~637MB | Smallest AI model (one-time download) |
+
+**Total: ~700MB one-time download**
+
+- ✅ 100% local - no data sent to cloud
+- ✅ Works offline after initial setup
+- ✅ User permission required before any downloads
+
+### How AI Mode Works
+
+When you run `execdiff-git scan-ai`:
+
+1. **Ollama check** - Checks if Ollama is installed
+2. **Model check** - Checks if AI model is available
+3. **User permission** - Asks before downloading anything
+4. **Auto-start** - Starts Ollama server automatically
+5. **Analysis** - Runs local AI analysis on your changes
+6. **Auto-stop** - Stops Ollama server when done
+
+### Install Ollama (One-Time)
+
+**macOS:**
+```bash
+brew install ollama
+```
+
+**macOS/Linux:**
+```bash
+curl -fsSL https://ollama.ai/install.sh | sh
+```
+
+**Or download from:** https://ollama.ai/
+
+### Use AI Mode
 
 Simply run:
 
@@ -78,52 +115,29 @@ Simply run:
 execdiff-git scan-ai
 ```
 
-**ExecDiff Git AI will automatically:**
-- ✅ Check if Ollama is installed
-- ✅ Start Ollama server in the background
-- ✅ Run AI analysis on your code changes
-- ✅ Stop Ollama server when done
+If the AI model is not installed, you'll be asked:
 
-No manual setup needed! Everything happens automatically within the command.
+```
+⚠️  Model 'tinyllama' (~637MB) is not installed locally.
+✅ Everything stays local - no data is sent to the cloud.
 
-#### Option 2: Manual Setup (Optional)
-
-If you want to run Ollama manually or configure it yourself:
-
-**Install Ollama:**
-
-**macOS / Linux:**
-```bash
-curl -fsSL https://ollama.ai/install.sh | sh
+Download 'tinyllama' now? (yes/no): 
 ```
 
-**Or use Homebrew (macOS):**
-```bash
-brew install ollama
-```
+**Say "yes" to download, or "no" to skip AI analysis.**
 
-**Or download from:** https://ollama.ai/
-
-**Start the server manually (optional):**
-```bash
-ollama serve
-```
-
-**Then run AI mode:**
-```bash
-execdiff-git scan-ai
-```
+---
 
 ## Usage
 
 ### Basic Commands
 
-**Non-AI mode (fast, always available):**
+**Non-AI mode (fast, always available, no setup):**
 ```bash
 execdiff-git scan
 ```
 
-**AI mode (automatic, optional):**
+**AI mode (optional, requires Ollama ~700MB total):**
 ```bash
 execdiff-git scan-ai
 ```
@@ -138,26 +152,21 @@ execdiff-git scan-ai
 ==============================
 File                            +Lines  -Lines
 ------------------------------------------------
-shopping_cart.py                     10       2
-checkout.py                           7       1
-email/notifications.py                5       0
-
---------------------------------
+test_feature.py                     14       0
 
 ================================================================================
 📋 Impact Summary
 ================================================================================
-Symbol                    Change Type          Risk    
+Symbol                    Change Type          Impact  
 --------------------------------------------------------
-add_to_cart               function added       LOW     
-remove_from_cart          function modified    LOW     
-checkout                  function modified    LOW     
-send_order_email          function added       LOW     
+authenticate_user         function added       LOW     
+create_session            function added       LOW     
+validate_token            function added       LOW     
 
 ✅ Assessment complete!
 ```
 
-**AI Mode (with Automatic Ollama):**
+**AI Mode (with Ollama):**
 
 ```
 ==============================
@@ -165,21 +174,16 @@ send_order_email          function added       LOW
 ==============================
 File                            +Lines  -Lines
 ------------------------------------------------
-shopping_cart.py                     10       2
-checkout.py                           7       1
-email/notifications.py                5       0
-
---------------------------------
+test_feature.py                     14       0
 
 ================================================================================
 📋 Impact Summary
 ================================================================================
-Symbol                    Change Type          Risk    
+Symbol                    Change Type          Impact  
 --------------------------------------------------------
-add_to_cart               function added       LOW     
-remove_from_cart          function modified    LOW     
-checkout                  function modified    LOW     
-send_order_email          function added       LOW     
+authenticate_user         function added       LOW     
+create_session            function added       LOW     
+validate_token            function added       LOW     
 
 ================================================================================
 🤖 AI Impact Assessment
@@ -188,68 +192,56 @@ send_order_email          function added       LOW
 🚀 Starting Ollama server...
 ⏳ Waiting for Ollama server to start...
 ✅ Ollama server is ready!
+🧠 Analyzing with AI (tinyllama, 100% local)...
 
-📋 What Changed:
-  🔴 Critical: Checkout now supports Apple Pay, Google Pay, and PayPal in addition to credit cards. Payment processing and customer purchase experience are directly affected.
-  🟡 Important: Cart logic now merges duplicate items and updates product quantities. User experience may be impacted.
-  🟢 Low Risk: Order confirmation emails improved.
+Symbol: authenticate_user
+Impact: MEDIUM
+Summary: Added user authentication logic. This affects user access and security.
 
-  Scope: 3 files affected in this change
-
-Detailed Analysis:
-
-File: shopping_cart.py - Symbol: add_to_cart
+Symbol: create_session
 Impact: LOW
-Summary: Cart logic updated to better handle product quantities and merging duplicate items.
+Summary: Added session creation. Improves user experience and session management.
 
-File: shopping_cart.py - Symbol: remove_from_cart
+Symbol: validate_token
 Impact: LOW
-Summary: Improved item removal to prevent accidental deletion of unrelated products.
-
-File: checkout.py - Symbol: checkout
-Impact: HIGH
-Summary: Checkout flow changed to support Apple Pay, Google Pay, PayPal, and credit cards.
-
-File: email/notifications.py - Symbol: send_order_email
-Impact: LOW
-Summary: Confirmation emails are now sent after every successful order.
-
-⚠️  ALERT: 1 critical change detected!
-Please review carefully before deploying to production.
+Summary: Added token validation. Enhances security by validating session tokens.
 
 🛑 Ollama server stopped
 
 ✅ Assessment complete!
 ```
 
+---
+
+## Comparison: Non-AI vs AI Mode
+
+| Feature | Non-AI Mode | AI Mode |
+|---------|-------------|---------|
+| **Setup** | None | Ollama + model (~700MB) |
+| **Speed** | Instant | 5-30 seconds |
+| **Analysis** | Symbol detection | Business-facing summaries |
+| **Privacy** | 100% local | 100% local |
+| **Offline** | Yes | Yes (after setup) |
+
+---
+
 ## How It Works
 
-1. **Reads git diff** - Gets all staged and unstaged changes
+1. **Reads git diff** - Gets all staged changes (`git diff --cached`)
 2. **Extracts symbols** - Finds functions, classes, and variables
 3. **Detects change type** - Identifies what kind of change was made
 4. **Assesses impact** - Uses local AI (Ollama) if available, or quick heuristics
 5. **Generates business summary** - Specific, non-technical impact summary (AI mode only)
 6. **Advisory warnings** - Critical impact changes trigger warnings (AI mode only)
 
-### Non-AI Mode
-- Fast, always works
-- No dependencies beyond git
-- Detects changed symbols and file statistics
-- Good for quick checks
-
-### AI Mode
-- Optional, requires Ollama to be installed
-- Automatically starts and stops Ollama
-- Deep analysis with business-facing summaries
-- Specific details about what changed and why it matters
-- No need to manually manage Ollama
+---
 
 ## Development
 
 Install in editable mode:
 
 ```bash
-git clone https://github.com/yourusername/execdiff-git-ai.git
+git clone https://github.com/anupmoncy/execdiff-git-ai.git
 cd execdiff-git-ai
 pip install -e .
 ```
