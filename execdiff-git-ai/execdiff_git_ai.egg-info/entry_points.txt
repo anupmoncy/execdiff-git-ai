@@ -1,0 +1,2 @@
+[console_scripts]
+execdiff-git = execdiff_git_ai.cli:main

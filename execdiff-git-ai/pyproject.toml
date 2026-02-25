@@ -4,34 +4,33 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "execdiff-git-ai"
-version = "1.0.0"
-description = "Local-first tool for analyzing AI-driven code changes. Analyzes Git diffs and assesses impact of changes made by AI coding assistants."
+version = "1.0.1"
+description = "Local-first tool for analyzing AI-driven code changes. Understand what your AI copilot changed before you commit it."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Anup Moncy", email = "n93181165@gmail.com" }
+	{ name = "Anup Moncy", email = "n93181165@gmail.com" }
 ]
 requires-python = ">=3.8"
-keywords = ["git", "ai", "copilot", "code-analysis", "diff", "impact-assessment", "execdiff"]
+keywords = ["git", "ai", "copilot", "code-analysis", "diff", "impact-assessment"]
 
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Software Development :: Version Control :: Git",
-    "Topic :: Software Development :: Quality Assurance"
+	"Development Status :: 4 - Beta",
+	"Intended Audience :: Developers",
+	"License :: OSI Approved :: Apache Software License",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3.8",
+	"Programming Language :: Python :: 3.9",
+	"Programming Language :: Python :: 3.10",
+	"Programming Language :: Python :: 3.11",
+	"Programming Language :: Python :: 3.12",
+	"Topic :: Software Development :: Version Control :: Git"
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/yourusername/execdiff-git-ai"
-"Bug Tracker" = "https://github.com/yourusername/execdiff-git-ai/issues"
-"Documentation" = "https://github.com/yourusername/execdiff-git-ai#readme"
+"Homepage" = "https://github.com/anupmoncy/execdiff-git-ai"
+"Bug Tracker" = "https://github.com/anupmoncy/execdiff-git-ai/issues"
+"Documentation" = "https://github.com/anupmoncy/execdiff-git-ai#readme"
 
 [project.scripts]
 execdiff-git = "execdiff_git_ai.cli:main"
