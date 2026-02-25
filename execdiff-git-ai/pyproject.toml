@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "execdiff-git-ai"
-version = "1.0.1"
+version = "1.0.2"
 description = "AI Impact Assessment for git changes - understand what your AI copilot changed before you commit."
 readme = "README.md"
 license = { file = "LICENSE" }

@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: execdiff-git-ai
-Version: 1.0.1
+Version: 1.0.2
 Summary: AI Impact Assessment for git changes - understand what your AI copilot changed before you commit.
 Author-email: Anup Moncy <n93181165@gmail.com>
 License: Apache License
@@ -45,27 +45,25 @@ Dynamic: license-file
 
 AI Impact Assessment for git changes - understand what your AI copilot changed before you commit it.
 
-## Overview
+## Intro
 
-ExecDiff Git AI is a Python CLI tool that helps developers understand the scope and implications of code changes made by AI coding assistants (like GitHub Copilot, Cursor, or Replit AI) by analyzing git diffs and extracting modified symbols (functions, classes, variables). It can optionally use a local LLM (Ollama) to assess the business impact of each change.
+ExecDiff Git AI is a Python CLI tool that helps developers understand the scope and implications of code changes made by AI coding assistants (like GitHub Copilot, Cursor, or Replit AI). It analyzes git diffs and extracts modified symbols (functions, classes, variables).
 
-## Privacy
-
-ExecDiff Git AI runs **entirely locally**.
-
+**100% Local - No Cloud Required**
 - ✅ No code is uploaded
 - ✅ No cloud calls required
 - ✅ No telemetry
 - ✅ Works offline with optional local LLM (Ollama)
 - ✅ All analysis happens on your machine
 
-## Features
+## Features & Privacy
 
 - **Local-first**: Runs entirely on your machine with no cloud calls or telemetry
-- **Impact Assessment**: Detects specific changes to functions, classes, and variables and provides human-readable summaries
-- **Two modes**: Fast analysis (non-AI) or deep AI-powered analysis (optional)
-- **CLI-first**: `execdiff-git scan` and `execdiff-git scan-ai`
-- **Works offline**, no telemetry
+- **Fast Assessment**: Quick symbol detection and impact analysis (always available)
+- **Optional AI Mode**: Deep business-facing analysis using local Ollama (opt-in)
+- **CLI-first**: Simple commands `execdiff-git assess` and `execdiff-git ai-assess`
+- **Zero Dependencies**: Non-AI mode works with just Python and Git
+- **Privacy-focused**: No data sent to external servers
 
 ## Installation
 
@@ -74,19 +72,40 @@ ExecDiff Git AI runs **entirely locally**.
 - Python 3.8+
 - Git
 
-### Initial Setup
-
-Install from PyPI:
+### Install Package
 
 ```bash
 pip install execdiff-git-ai
 ```
 
-That's it! You can now use the non-AI mode immediately.
+### Optional: Ollama for AI Mode
 
-## How to Use
+For AI-powered analysis, optionally install:
 
-### Quick Start (No AI Required)
+| Component | Size | Purpose |
+|-----------|------|---------|
+| Ollama | ~50MB | Local AI runtime |
+| tinyllama model | ~637MB | AI analysis model |
+
+**Total: ~700MB (one-time, optional)**
+
+**Install Ollama:**
+
+macOS:
+```bash
+brew install ollama
+```
+
+macOS/Linux:
+```bash
+curl -fsSL https://ollama.ai/install.sh | sh
+```
+
+Or download from: https://ollama.ai/
+
+---
+
+## Initial Setup
 
 1. **Make your code change** (or let your AI copilot make changes)
 
@@ -98,97 +117,22 @@ That's it! You can now use the non-AI mode immediately.
    git add -N .
    ```
 
-3. **Run the assessment**
-
-   ```bash
-   execdiff-git scan
-   ```
-
-**Note**: For newly created files, you must run `git add -N .` (intent-to-add) so that `execdiff-git scan` can detect them. This is a git limitation for diff tools.
+3. **You're ready to use ExecDiff Git AI!**
 
 ---
 
-## AI-Powered Assessment (Optional)
+## Quick Assessment (No AI)
 
-**AI mode is completely optional.** The non-AI mode works great for most use cases.
+Fast, local symbol detection - no setup required.
 
-### Requirements for AI Mode
-
-| Component | Size | Description |
-|-----------|------|-------------|
-| **Ollama** | ~50MB | Local AI runtime (one-time install) |
-| **tinyllama model** | ~637MB | Smallest AI model (one-time download) |
-
-**Total: ~700MB one-time download**
-
-- ✅ 100% local - no data sent to cloud
-- ✅ Works offline after initial setup
-- ✅ User permission required before any downloads
-
-### How AI Mode Works
-
-When you run `execdiff-git scan-ai`:
-
-1. **Ollama check** - Checks if Ollama is installed
-2. **Model check** - Checks if AI model is available
-3. **User permission** - Asks before downloading anything
-4. **Auto-start** - Starts Ollama server automatically
-5. **Analysis** - Runs local AI analysis on your changes
-6. **Auto-stop** - Stops Ollama server when done
-
-### Install Ollama (One-Time)
-
-**macOS:**
-```bash
-brew install ollama
-```
-
-**macOS/Linux:**
-```bash
-curl -fsSL https://ollama.ai/install.sh | sh
-```
-
-**Or download from:** https://ollama.ai/
-
-### Use AI Mode
-
-Simply run:
+### Usage
 
 ```bash
-execdiff-git scan-ai
-```
-
-If the AI model is not installed, you'll be asked:
-
-```
-⚠️  Model 'tinyllama' (~637MB) is not installed locally.
-✅ Everything stays local - no data is sent to the cloud.
-
-Download 'tinyllama' now? (yes/no): 
-```
-
-**Say "yes" to download, or "no" to skip AI analysis.**
-
----
-
-## Usage
-
-### Basic Commands
-
-**Non-AI mode (fast, always available, no setup):**
-```bash
-execdiff-git scan
-```
-
-**AI mode (optional, requires Ollama ~700MB total):**
-```bash
-execdiff-git scan-ai
+execdiff-git assess
 ```
 
 ### Example Output
 
-**Non-AI Mode:**
-
 ```
 ==============================
 📊 File Change Assessment
@@ -197,19 +141,41 @@ File                            +Lines  -Lines
 ------------------------------------------------
 test_feature.py                     14       0
 
+--------------------------------
+
 ================================================================================
 📋 Impact Summary
 ================================================================================
-Symbol                    Change Type          Impact  
+Symbol                    Change Type          Impact
 --------------------------------------------------------
-authenticate_user         function added       LOW     
-create_session            function added       LOW     
-validate_token            function added       LOW     
+[NEW] authenticate_user   function added       LOW
+[NEW] create_session      function added       LOW
+[NEW] validate_token      function added       LOW
 
 ✅ Assessment complete!
 ```
 
-**AI Mode (with Ollama):**
+---
+
+## AI-Powered Assessment
+
+Deep analysis with business-facing summaries using local Ollama (requires optional Ollama installation).
+
+### Usage
+
+```bash
+execdiff-git ai-assess
+```
+
+The tool will:
+- Check if Ollama is installed
+- Ask permission before downloading AI model (~637MB)
+- Start Ollama server automatically
+- Analyze each change individually
+- Get overall business impact summary
+- Stop Ollama server when done
+
+### Example Output
 
 ```
 ==============================
@@ -219,14 +185,16 @@ File                            +Lines  -Lines
 ------------------------------------------------
 test_feature.py                     14       0
 
+--------------------------------
+
 ================================================================================
 📋 Impact Summary
 ================================================================================
-Symbol                    Change Type          Impact  
+Symbol                    Change Type          Impact
 --------------------------------------------------------
-authenticate_user         function added       LOW     
-create_session            function added       LOW     
-validate_token            function added       LOW     
+[NEW] authenticate_user   function added       LOW
+[NEW] create_session      function added       LOW
+[NEW] validate_token      function added       LOW
 
 ================================================================================
 🤖 AI Impact Assessment
@@ -235,19 +203,27 @@ validate_token            function added       LOW
 🚀 Starting Ollama server...
 ⏳ Waiting for Ollama server to start...
 ✅ Ollama server is ready!
-🧠 Analyzing with AI (tinyllama, 100% local)...
 
-Symbol: authenticate_user
-Impact: MEDIUM
-Summary: Added user authentication logic. This affects user access and security.
+🧠 Analyzing 3 changes:
 
-Symbol: create_session
-Impact: LOW
-Summary: Added session creation. Improves user experience and session management.
+  • [NEW] authenticate_user... ✓
+    Handles user login and credential verification.
 
-Symbol: validate_token
-Impact: LOW
-Summary: Added token validation. Enhances security by validating session tokens.
+  • [NEW] create_session... ✓
+    Establishes user sessions after authentication.
+
+  • [NEW] validate_token... ✓
+    Verifies tokens are valid and not expired.
+
+  • Overall impact... ✓
+
+Overall:
+• System now provides complete authentication workflow with secure token validation.
+
+Changes:
+• [NEW] authenticate_user: Handles user login and credential verification.
+• [NEW] create_session: Establishes user sessions after authentication.
+• [NEW] validate_token: Verifies tokens are valid and not expired.
 
 🛑 Ollama server stopped
 
@@ -256,56 +232,41 @@ Summary: Added token validation. Enhances security by validating session tokens.
 
 ---
 
-## Comparison: Non-AI vs AI Mode
+## Symbol Change Types
 
-| Feature | Non-AI Mode | AI Mode |
-|---------|-------------|---------|
-| **Setup** | None | Ollama + model (~700MB) |
-| **Speed** | Instant | 5-30 seconds |
-| **Analysis** | Symbol detection | Business-facing summaries |
-| **Privacy** | 100% local | 100% local |
-| **Offline** | Yes | Yes (after setup) |
+Each symbol is labeled with its change type:
+
+- **[NEW]** - Newly added function or class
+- **[MODIFIED]** - Existing function or class that was changed
+- **[DELETED]** - Function or class that was removed
 
 ---
 
 ## How It Works
 
-1. **Reads git diff** - Gets all staged changes (`git diff --cached`)
+1. **Reads git diff** - Gets all staged changes
 2. **Extracts symbols** - Finds functions, classes, and variables
-3. **Detects change type** - Identifies what kind of change was made
-4. **Assesses impact** - Uses local AI (Ollama) if available, or quick heuristics
-5. **Generates business summary** - Specific, non-technical impact summary (AI mode only)
-6. **Advisory warnings** - Critical impact changes trigger warnings (AI mode only)
-
----
+3. **Detects changes** - Identifies NEW, MODIFIED, or DELETED code
+4. **Analyzes impact** - AI provides business-facing summaries (AI mode only)
 
 ## Development
-
-Install in editable mode:
 
 ```bash
 git clone https://github.com/anupmoncy/execdiff-git-ai.git
 cd execdiff-git-ai
 pip install -e .
+execdiff-git assess
 ```
 
-Run the CLI:
-
-```bash
-execdiff-git scan
-```
-
-## Programmatic Usage
-
-You can also use ExecDiff Git AI as a library:
+## Library Usage
 
 ```python
 from execdiff_git_ai.agent import run_agent, run_agent_with_ai
 
-# Non-AI mode (default)
+# Non-AI mode
 run_agent()
 
-# AI-powered mode (optional, automatically manages Ollama)
+# AI mode
 run_agent_with_ai()
 ```
 
@@ -323,4 +284,4 @@ Contributions welcome! Please open an issue or submit a pull request.
 
 ---
 
-**Note**: This is an early-stage project. The API and behavior are subject to change.
+**Note**: Early-stage project. API and behavior subject to change.
