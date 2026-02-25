@@ -1,6 +1,8 @@
 import subprocess
 import os
 import re
+import time
+import signal
 
 def get_git_diff():
     """Get the current git diff for unstaged changes."""
@@ -106,6 +108,75 @@ def format_table_row(col1, col2, col3):
     """Format a table row with proper alignment."""
     return f"{col1:<32} {col2:<20} {col3:>8}"
 
+def check_ollama_installed():
+    """Check if Ollama is installed."""
+    try:
+        result = subprocess.run(
+            ["ollama", "--version"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        return result.returncode == 0
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+def check_ollama_running():
+    """Check if Ollama server is already running."""
+    try:
+        result = subprocess.run(
+            ["curl", "-s", "http://localhost:11434/api/tags"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        return result.returncode == 0
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+def start_ollama_server():
+    """Start Ollama server as a background process."""
+    try:
+        print("🚀 Starting Ollama server...")
+        
+        # Start ollama serve in background
+        process = subprocess.Popen(
+            ["ollama", "serve"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            preexec_fn=os.setsid if os.name != 'nt' else None
+        )
+        
+        # Wait for server to be ready
+        print("⏳ Waiting for Ollama server to start...")
+        for i in range(30):  # Wait up to 30 seconds
+            time.sleep(1)
+            if check_ollama_running():
+                print("✅ Ollama server is ready!")
+                return process
+        
+        print("⚠️  Ollama server did not respond")
+        process.terminate()
+        return None
+    except FileNotFoundError:
+        print("❌ Ollama is not installed")
+        return None
+    except Exception as e:
+        print(f"❌ Error starting Ollama: {e}")
+        return None
+
+def stop_ollama_server(process):
+    """Stop Ollama server if we started it."""
+    if process:
+        try:
+            if os.name != 'nt':
+                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            else:
+                process.terminate()
+            print("🛑 Ollama server stopped")
+        except:
+            pass
+
 def run_agent():
     """Run the ExecDiff Git AI assessment (non-AI mode)."""
     print("\n" + "="*30)
@@ -148,17 +219,30 @@ def run_agent():
 def analyze_with_ollama(diff_text, symbols):
     """
     Use Ollama to analyze the git diff and provide AI-powered impact assessment.
+    Automatically starts Ollama server if needed.
     """
+    ollama_process = None
+    
     try:
-        prompt = f"""Analyze these code changes and provide an impact assessment for each modified symbol.
+        # Check if Ollama is installed
+        if not check_ollama_installed():
+            return "Ollama is not installed. Using built-in analysis instead.\n(To use AI analysis, install Ollama from https://ollama.ai/)"
+        
+        # Start Ollama if not running
+        if not check_ollama_running():
+            ollama_process = start_ollama_server()
+            if not ollama_process:
+                return "Could not start Ollama server. Using built-in analysis instead."
+        
+        prompt = f"""You are an expert product analyst. Analyze these code changes and provide business-facing impact assessment.
 
 For each symbol, provide:
 - File: <filename>
 - Symbol: <name>
 - Impact: <LOW/MEDIUM/HIGH>
-- Summary: <one-line explanation of the change and its impact>
+- Summary: <what changed and its business/user impact>
 
-Changed symbols to analyze: {', '.join([s['name'] for s in symbols])}
+Changed symbols: {', '.join([s['name'] for s in symbols])}
 
 Git Diff (first 2000 chars):
 {diff_text[:2000]}
@@ -166,26 +250,28 @@ Git Diff (first 2000 chars):
 Format your response as:
 File: <filename> - Symbol: <name>
 Impact: <LOW/MEDIUM/HIGH>
-Summary: <explanation>
+Summary: <business/user-facing summary>
 """
         
         result = subprocess.run(
             ["ollama", "run", "llama2", prompt],
             capture_output=True,
             text=True,
-            timeout=60
+            timeout=120
         )
         
         if result.returncode == 0:
             return result.stdout
         else:
-            return "AI analysis failed. Make sure Ollama is installed and running."
-    except FileNotFoundError:
-        return "Ollama not found. Install from https://ollama.ai/"
+            return "AI analysis failed."
     except subprocess.TimeoutExpired:
         return "AI analysis timed out."
     except Exception as e:
         return f"AI analysis error: {str(e)}"
+    finally:
+        # Stop Ollama if we started it
+        if ollama_process:
+            stop_ollama_server(ollama_process)
 
 def extract_impact_summary(ai_analysis):
     """Extract a summary of changes from AI analysis."""
@@ -263,7 +349,7 @@ def extract_change_summary(ai_analysis, file_stats, symbols):
     return summary_lines
 
 def run_agent_with_ai():
-    """Run the ExecDiff Git AI assessment with AI analysis."""
+    """Run the ExecDiff Git AI assessment with built-in AI analysis."""
     print("\n" + "="*30)
     print("📊 File Change Assessment")
     print("="*30)
@@ -305,13 +391,14 @@ def run_agent_with_ai():
         print("="*80)
         print("🤖 AI Impact Assessment")
         print("="*80)
+        print()
         
         ai_analysis = analyze_with_ollama(diff, symbols)
         
         # Extract and display business-facing summary
         summary = extract_change_summary(ai_analysis, file_stats, symbols)
         if summary:
-            print("\n📋 What Changed:")
+            print("📋 What Changed:")
             for line in summary:
                 print(f"  {line}")
             print()
@@ -319,7 +406,7 @@ def run_agent_with_ai():
         print("Detailed Analysis:\n")
         print(ai_analysis)
         
-        # Check for HIGH impact symbols and add warning
+        # Check for HIGH impact
         high_impact_count = ai_analysis.count("Impact: HIGH")
         if high_impact_count > 0:
             print("\n⚠️  ALERT: " + str(high_impact_count) + " critical " + ("change" if high_impact_count == 1 else "changes") + " detected!")

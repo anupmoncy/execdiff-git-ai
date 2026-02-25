@@ -109,9 +109,32 @@ That's it! You can now use the non-AI mode immediately.
 
 Ollama is **completely optional**. You can use ExecDiff Git AI without it.
 
-If you want AI-powered impact analysis, install Ollama (free, open-source):
+If you want AI-powered impact analysis, ExecDiff Git AI can help you install Ollama (free, open-source):
 
-#### Install Ollama
+#### Automatic Installation (Recommended)
+
+Simply run AI mode and it will detect if Ollama is missing:
+
+```bash
+execdiff-git scan-ai
+```
+
+If Ollama is not installed, you'll be asked:
+
+```
+🤖 Ollama Not Found
+Ollama is required for AI mode (free, open-source local LLM).
+Would you like to install it now? (yes/no):
+```
+
+**Say "yes" and ExecDiff Git AI will:**
+- ✅ Download Ollama automatically
+- ✅ Install to your system
+- ✅ Configure it for use
+
+#### Manual Installation
+
+Or install Ollama manually:
 
 **macOS / Linux:**
 ```bash
@@ -125,7 +148,9 @@ brew install ollama
 
 **Or download from:** https://ollama.ai/
 
-#### Configure Ollama
+#### Configure Ollama (Manual)
+
+If you installed manually, set up the model:
 
 1. **Start the Ollama server:**
    ```bash
@@ -144,7 +169,7 @@ brew install ollama
 
 #### Use AI Mode
 
-With Ollama running in the background:
+With Ollama installed and running:
 
 ```bash
 execdiff-git scan-ai

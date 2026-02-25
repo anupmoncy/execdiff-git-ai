@@ -20,7 +20,8 @@ ExecDiff Git AI runs **entirely locally**.
 
 - **Local-first**: Runs entirely on your machine with no cloud calls or telemetry
 - **Impact Assessment**: Detects specific changes to functions, classes, and variables and provides human-readable summaries
-- **Two modes**: Fast analysis (non-AI) or deep AI-powered analysis (optional, requires Ollama)
+- **Two modes**: Fast analysis (non-AI) or deep AI-powered analysis (optional)
+- **Automatic Ollama**: AI mode automatically starts Ollama in the background - no manual setup needed
 - **CLI-first**: `execdiff-git scan` and `execdiff-git scan-ai`
 - **Works offline**, no telemetry
 
@@ -63,36 +64,33 @@ That's it! You can now use the non-AI mode immediately.
 
 **Note**: For newly created files, you must run `git add -N .` (intent-to-add) so that `execdiff-git scan` can detect them. This is a git limitation for diff tools.
 
-### Optional: AI-Powered Assessment with Ollama
+### AI-Powered Assessment (Optional)
 
-Ollama is **completely optional**. You can use ExecDiff Git AI without it.
+**Ollama is completely optional.** The non-AI mode works great for most use cases.
 
-If you want AI-powered impact analysis, ExecDiff Git AI can help you install Ollama (free, open-source):
+If you want AI-powered analysis:
 
-#### Automatic Installation (Recommended)
+#### Option 1: Automatic (Recommended)
 
-Simply run AI mode and it will detect if Ollama is missing:
+Simply run:
 
 ```bash
 execdiff-git scan-ai
 ```
 
-If Ollama is not installed, you'll be asked:
+**ExecDiff Git AI will automatically:**
+- ✅ Check if Ollama is installed
+- ✅ Start Ollama server in the background
+- ✅ Run AI analysis on your code changes
+- ✅ Stop Ollama server when done
 
-```
-🤖 Ollama Not Found
-Ollama is required for AI mode (free, open-source local LLM).
-Would you like to install it now? (yes/no):
-```
+No manual setup needed! Everything happens automatically within the command.
 
-**Say "yes" and ExecDiff Git AI will:**
-- ✅ Download Ollama automatically
-- ✅ Install to your system
-- ✅ Configure it for use
+#### Option 2: Manual Setup (Optional)
 
-#### Manual Installation
+If you want to run Ollama manually or configure it yourself:
 
-Or install Ollama manually:
+**Install Ollama:**
 
 **macOS / Linux:**
 ```bash
@@ -106,29 +104,12 @@ brew install ollama
 
 **Or download from:** https://ollama.ai/
 
-#### Configure Ollama (Manual)
+**Start the server manually (optional):**
+```bash
+ollama serve
+```
 
-If you installed manually, set up the model:
-
-1. **Start the Ollama server:**
-   ```bash
-   ollama serve
-   ```
-
-2. **In another terminal, pull the model (one-time):**
-   ```bash
-   ollama pull llama2
-   ```
-
-3. **Verify it works:**
-   ```bash
-   ollama run llama2 "Hello"
-   ```
-
-#### Use AI Mode
-
-With Ollama installed and running:
-
+**Then run AI mode:**
 ```bash
 execdiff-git scan-ai
 ```
@@ -142,7 +123,7 @@ execdiff-git scan-ai
 execdiff-git scan
 ```
 
-**AI mode (requires Ollama running):**
+**AI mode (automatic, optional):**
 ```bash
 execdiff-git scan-ai
 ```
@@ -166,17 +147,17 @@ email/notifications.py                5       0
 ================================================================================
 📋 Impact Summary
 ================================================================================
-Symbol                    Change Type          Impact  
+Symbol                    Change Type          Risk    
 --------------------------------------------------------
-add_to_cart               function modified    MEDIUM  
+add_to_cart               function added       LOW     
 remove_from_cart          function modified    LOW     
-checkout                  function modified    HIGH    
+checkout                  function modified    LOW     
 send_order_email          function added       LOW     
 
 ✅ Assessment complete!
 ```
 
-**AI Mode (with Ollama):**
+**AI Mode (with Automatic Ollama):**
 
 ```
 ==============================
@@ -193,28 +174,32 @@ email/notifications.py                5       0
 ================================================================================
 📋 Impact Summary
 ================================================================================
-Symbol                    Change Type          Impact  
+Symbol                    Change Type          Risk    
 --------------------------------------------------------
-add_to_cart               function modified    MEDIUM  
+add_to_cart               function added       LOW     
 remove_from_cart          function modified    LOW     
-checkout                  function modified    HIGH    
+checkout                  function modified    LOW     
 send_order_email          function added       LOW     
 
 ================================================================================
 🤖 AI Impact Assessment
 ================================================================================
 
-📋 What Changed:
-  🔴 Critical: Checkout now supports Apple Pay, Google Pay, and PayPal in addition to credit cards, and changes the order completion flow. Payment processing reliability and customer purchase experience are directly affected.
-  🟡 Important: Cart logic now merges duplicate items and updates product quantities in one step. This changes how users see totals and manage products in their cart.
-  🟢 Low Risk: Order confirmation emails improved. Cart item removal is more reliable.
+🚀 Starting Ollama server...
+⏳ Waiting for Ollama server to start...
+✅ Ollama server is ready!
 
-  Scope: 3 files modified (22 additions, 3 removals)
+📋 What Changed:
+  🔴 Critical: Checkout now supports Apple Pay, Google Pay, and PayPal in addition to credit cards. Payment processing and customer purchase experience are directly affected.
+  🟡 Important: Cart logic now merges duplicate items and updates product quantities. User experience may be impacted.
+  🟢 Low Risk: Order confirmation emails improved.
+
+  Scope: 3 files affected in this change
 
 Detailed Analysis:
 
 File: shopping_cart.py - Symbol: add_to_cart
-Impact: MEDIUM
+Impact: LOW
 Summary: Cart logic updated to better handle product quantities and merging duplicate items.
 
 File: shopping_cart.py - Symbol: remove_from_cart
@@ -223,7 +208,7 @@ Summary: Improved item removal to prevent accidental deletion of unrelated produ
 
 File: checkout.py - Symbol: checkout
 Impact: HIGH
-Summary: Checkout flow changed to support Apple Pay, Google Pay, PayPal, and credit cards, and to update order completion steps.
+Summary: Checkout flow changed to support Apple Pay, Google Pay, PayPal, and credit cards.
 
 File: email/notifications.py - Symbol: send_order_email
 Impact: LOW
@@ -231,6 +216,8 @@ Summary: Confirmation emails are now sent after every successful order.
 
 ⚠️  ALERT: 1 critical change detected!
 Please review carefully before deploying to production.
+
+🛑 Ollama server stopped
 
 ✅ Assessment complete!
 ```
@@ -240,9 +227,22 @@ Please review carefully before deploying to production.
 1. **Reads git diff** - Gets all staged and unstaged changes
 2. **Extracts symbols** - Finds functions, classes, and variables
 3. **Detects change type** - Identifies what kind of change was made
-4. **Assesses impact** - Uses local AI (Ollama) if available, or heuristics
+4. **Assesses impact** - Uses local AI (Ollama) if available, or quick heuristics
 5. **Generates business summary** - Specific, non-technical impact summary (AI mode only)
 6. **Advisory warnings** - Critical impact changes trigger warnings (AI mode only)
+
+### Non-AI Mode
+- Fast, always works
+- No dependencies beyond git
+- Detects changed symbols and file statistics
+- Good for quick checks
+
+### AI Mode
+- Optional, requires Ollama to be installed
+- Automatically starts and stops Ollama
+- Deep analysis with business-facing summaries
+- Specific details about what changed and why it matters
+- No need to manually manage Ollama
 
 ## Development
 
@@ -270,7 +270,7 @@ from execdiff_git_ai.agent import run_agent, run_agent_with_ai
 # Non-AI mode (default)
 run_agent()
 
-# AI-powered mode (optional, requires Ollama)
+# AI-powered mode (optional, automatically manages Ollama)
 run_agent_with_ai()
 ```
 
