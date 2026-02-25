@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "execdiff-git-ai"
+version = "1.0.0"
+description = "ExecDiff Git AI: Scan workspace for AI-driven code changes."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Anup Moncy", email = "n93181165@gmail.com" }
+]
+requires-python = ">=3.8"
+
+classifiers = [
+    "Programming Language :: Python :: 3"
+]
+
+[project.scripts]
+execdiff = "execdiff_git_ai.cli:main"

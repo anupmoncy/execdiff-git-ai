@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+pytrends
+pandas
+python-multipart
